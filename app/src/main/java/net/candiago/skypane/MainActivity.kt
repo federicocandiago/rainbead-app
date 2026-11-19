@@ -521,8 +521,9 @@ class MainActivity : Activity() {
         private val RGB = Regex("""rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)""")
 
         /**
-         * Reports the colour of the app's top bar (the root background, which Skypane also
-         * copies into theme-color) and of the body, and keeps reporting when they change.
+         * Reports the colours for the phone's status and navigation bars, and keeps reporting when they
+         * change: on Skypane its theme-color and skypane-nav-color (the colours of its own bars, which
+         * follow the theme), elsewhere the root and body backgrounds.
          */
         private val BAR_SCRIPT = """
             (function () {
@@ -542,9 +543,12 @@ class MainActivity : Activity() {
               }
               function bg(el) { return el ? rgb(getComputedStyle(el).backgroundColor) : ''; }
               function send() {
+                // Skypane says the colours of its own bars (theme-color for the top, skypane-nav-color for the
+                // bottom); other pages: the root background, then the body's
                 var meta = document.querySelector('meta[name="theme-color"]');
-                var top = bg(document.documentElement) || rgb(meta && meta.content);
-                var bottom = bg(document.body) || top;
+                var nav = document.querySelector('meta[name="skypane-nav-color"]');
+                var top = (nav && rgb(meta && meta.content)) || bg(document.documentElement) || rgb(meta && meta.content);
+                var bottom = rgb(nav && nav.content) || bg(document.body) || top;
                 var key = top + '|' + bottom;
                 if (key === last) return;
                 last = key;
