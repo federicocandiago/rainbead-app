@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Skypane</string>
+    <string name="setup_label">Address of your Skypane</string>
+    <string name="setup_hint">https://example.com/skypane</string>
+    <string name="setup_help">Enter the address of your Skypane desktop. You only need to do this once.</string>
+    <string name="setup_continue">Continue</string>
+    <string name="setup_checking">Checking…</string>
+    <string name="error_empty">Enter an address.</string>
+    <string name="error_invalid">This doesn\'t look like a valid address.</string>
+    <string name="error_unreachable">Can\'t reach this address. Check it and your connection.</string>
+    <string name="error_http">The server replied with error %1$d.</string>
+    <string name="no_app_for_link">No app can open this link.</string>
+    <string name="download_started">Downloading %1$s…</string>
+</resources>

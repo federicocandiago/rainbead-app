@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_label">Indirizzo del tuo Skypane</string>
+    <string name="setup_hint">https://esempio.it/skypane</string>
+    <string name="setup_help">Inserisci l\'indirizzo del tuo Skypane. Serve solo la prima volta.</string>
+    <string name="setup_continue">Continua</string>
+    <string name="setup_checking">Verifica in corso…</string>
+    <string name="error_empty">Inserisci un indirizzo.</string>
+    <string name="error_invalid">Questo non sembra un indirizzo valido.</string>
+    <string name="error_unreachable">Impossibile raggiungere questo indirizzo. Controllalo e verifica la connessione.</string>
+    <string name="error_http">Il server ha risposto con l\'errore %1$d.</string>
+    <string name="no_app_for_link">Nessuna app può aprire questo link.</string>
+    <string name="download_started">Download di %1$s…</string>
+</resources>
