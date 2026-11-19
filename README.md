@@ -9,6 +9,10 @@ Skypane instance in a native window. It is a twin of [kalban-app](https://github
 - **System bars** take the colour of the page, so they follow light and dark mode and the theme.
 - **Links** inside the instance stay in the app. Anything else opens in the browser or the matching app.
 - File uploads, downloads with the session cookies, a back button that walks the page history, and predictive back.
+- **Notifications** without Firebase: once the page gives the phone its token, Android asks the instance for news
+  every quarter of an hour (WorkManager), even with the app closed.
+- **Print:** Skypane's «File › Print…» (Sheets, the text editor, Boards) hands the document to Android's print
+  service, which also saves it as a PDF.
 - Debug builds let the page be inspected (`chrome://inspect`) and driven by the end-to-end tests.
 - Targets Android 17 (API 37). Needs Android 12 (API 31) or later.
 

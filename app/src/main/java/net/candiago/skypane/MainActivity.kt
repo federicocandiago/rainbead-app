@@ -6,6 +6,7 @@ import android.app.Activity
 import android.app.DownloadManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Insets
@@ -13,6 +14,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.print.PrintAttributes
+import android.print.PrintManager
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
@@ -41,6 +44,7 @@ class MainActivity : Activity() {
     private val executor = Executors.newSingleThreadExecutor()
 
     private var webView: WebView? = null
+    private var printing: WebView? = null // the page being printed (see Bridge.print)
     private var root: View? = null
     private var topBar: View? = null
     private var bottomBar: View? = null
@@ -355,6 +359,31 @@ class MainActivity : Activity() {
                     requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_NOTIFICATIONS)
                 }
                 PushWorker.schedule(this@MainActivity)
+            }
+        }
+
+        /**
+         * Print (Editor, Sheets, Boards…): the page sends the document as a whole HTML page; it is laid out in a web
+         * view of its own and handed to Android's print service, which also offers «Save as PDF».
+         */
+        @JavascriptInterface
+        fun print(html: String?, title: String?) {
+            if (html.isNullOrBlank()) return
+            val name = (title ?: "Skypane").ifBlank { "Skypane" }.take(80)
+            runOnUiThread {
+                val view = WebView(this@MainActivity)
+                printing = view // kept until printed: a web view nobody holds can go before it is done
+                view.settings.javaScriptEnabled = false
+                view.webViewClient = object : WebViewClient() {
+                    private var sent = false
+                    override fun onPageFinished(page: WebView, url: String?) {
+                        if (sent) return
+                        sent = true
+                        val manager = getSystemService(Context.PRINT_SERVICE) as PrintManager
+                        manager.print(name, page.createPrintDocumentAdapter(name), PrintAttributes.Builder().build())
+                    }
+                }
+                view.loadDataWithBaseURL(webView?.url, html, "text/html", "utf-8", null)
             }
         }
 
