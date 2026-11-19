@@ -1,10 +1,12 @@
 package net.candiago.skypane
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.DownloadManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Insets
 import android.net.Uri
@@ -67,6 +69,7 @@ class MainActivity : Activity() {
         window.isStatusBarContrastEnforced = false
         window.isNavigationBarContrastEnforced = false
 
+        if (prefs.getString(PushWorker.KEY_TOKEN, null) != null) PushWorker.schedule(this) // after an update or a reboot too
         val start = prefs.getString(KEY_START, null)
         val savedScope = prefs.getString(KEY_SCOPE, null)
         if (start == null || savedScope == null) {
@@ -334,6 +337,27 @@ class MainActivity : Activity() {
 
     /** Receives the page's top-bar colour (theme-color / root background) and body background. */
     private inner class Bridge {
+        /** Notifications on the phone: does this phone already have its token for /api/push? */
+        @JavascriptInterface
+        fun pushReady(): Boolean = prefs.getString(PushWorker.KEY_TOKEN, null) != null
+
+        /** How the phone is called in Settings › Devices. */
+        @JavascriptInterface
+        fun deviceName(): String = listOf(Build.MANUFACTURER.replaceFirstChar { it.uppercase() }, Build.MODEL).distinct().joinToString(" ")
+
+        /** The token the signed-in page made for this phone: kept, the permission asked, the checks started. */
+        @JavascriptInterface
+        fun pushToken(token: String?) {
+            if (token.isNullOrBlank() || !token.startsWith("skypush_")) return
+            prefs.edit().putString(PushWorker.KEY_TOKEN, token).apply()
+            runOnUiThread {
+                if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_NOTIFICATIONS)
+                }
+                PushWorker.schedule(this@MainActivity)
+            }
+        }
+
         @JavascriptInterface
         fun colors(top: String?, bottom: String?) {
             val t = parseCssColor(top)
@@ -411,10 +435,12 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        PushWorker.visible = true // the page shows its own notifications meanwhile
         webView?.onResume()
     }
 
     override fun onPause() {
+        PushWorker.visible = false
         webView?.onPause()
         CookieManager.getInstance().flush()
         super.onPause()
@@ -460,6 +486,7 @@ class MainActivity : Activity() {
         private const val KEY_START = "start_url"
         private const val KEY_SCOPE = "scope_url"
         private const val REQUEST_FILES = 1001
+        private const val REQUEST_NOTIFICATIONS = 1002
         private const val ERROR_TEXT = 0xFFFFE1E1.toInt()
 
         private val RGB = Regex("""rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)""")

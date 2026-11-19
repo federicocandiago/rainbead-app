@@ -11,4 +11,5 @@
     <string name="error_http">Il server ha risposto con l\'errore %1$d.</string>
     <string name="no_app_for_link">Nessuna app può aprire questo link.</string>
     <string name="download_started">Download di %1$s…</string>
+    <string name="notifications_channel">Notifiche</string>
 </resources>

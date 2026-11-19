@@ -20,8 +20,8 @@ android {
         applicationId = "net.candiago.skypane"
         minSdk = 31
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1"
+        versionCode = 2
+        versionName = "0.2"
     }
 
     signingConfigs {
@@ -51,4 +51,6 @@ android {
 dependencies {
     // passkeys inside the WebView (WebAuthn through Android's Credential Manager)
     implementation("androidx.webkit:webkit:1.14.0")
+    // notifications without Google: a check every quarter of an hour (/api/push of the Skypane site)
+    implementation("androidx.work:work-runtime:2.10.0")
 }
