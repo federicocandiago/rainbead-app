@@ -4,24 +4,24 @@ plugins {
     id("com.android.application")
 }
 
-// Release signing: point SKYPANE_SIGNING (or the default below) to a properties file with
+// Release signing: point RAINBEAD_SIGNING (or the default below) to a properties file with
 // storeFile, storePassword, keyAlias, keyPassword. Without it, release builds are unsigned.
-val signingFile = file(System.getenv("SKYPANE_SIGNING") ?: "${System.getProperty("user.home")}/.android/skypane-release.properties")
+val signingFile = file(System.getenv("RAINBEAD_SIGNING") ?: "${System.getProperty("user.home")}/.android/rainbead-release.properties")
 val signing = Properties().apply { if (signingFile.isFile) signingFile.inputStream().use { load(it) } }
 
 android {
-    namespace = "net.candiago.skypane"
+    namespace = "net.candiago.rainbead"
     compileSdk {
         // Android 17: the platform is named android-37.0 (API with a minor version).
         version = release(37) { minorApiLevel = 0 }
     }
 
     defaultConfig {
-        applicationId = "net.candiago.skypane"
+        applicationId = "net.candiago.rainbead"
         minSdk = 31
         targetSdk = 37
-        versionCode = 5
-        versionName = "0.6"
+        versionCode = 6
+        versionName = "0.7"
     }
 
     signingConfigs {
@@ -51,6 +51,6 @@ android {
 dependencies {
     // passkeys inside the WebView (WebAuthn through Android's Credential Manager)
     implementation("androidx.webkit:webkit:1.14.0")
-    // notifications without Google: a check every quarter of an hour (/api/push of the Skypane site)
+    // notifications without Google: a check every quarter of an hour (/api/push of the Rainbead site)
     implementation("androidx.work:work-runtime:2.10.0")
 }

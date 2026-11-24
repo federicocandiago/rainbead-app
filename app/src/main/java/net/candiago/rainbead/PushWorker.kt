@@ -1,4 +1,4 @@
-package net.candiago.skypane
+package net.candiago.rainbead
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -22,14 +22,14 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Notifications without Google's push service: every quarter of an hour (the least Android allows) the phone
- * asks the Skypane site what is new (GET {scope}api/push, with this phone's own token) and shows it. While the
+ * asks the Rainbead site what is new (GET {scope}api/push, with this phone's own token) and shows it. While the
  * app is in front the page shows them itself, so the phone only keeps count. A token the site no longer knows
  * (the phone was removed in Settings › Devices) is forgotten: the page asks again next time.
  */
 class PushWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
 
     override fun doWork(): Result {
-        val prefs = applicationContext.getSharedPreferences("skypane", Context.MODE_PRIVATE)
+        val prefs = applicationContext.getSharedPreferences("rainbead", Context.MODE_PRIVATE)
         val token = prefs.getString(KEY_TOKEN, null) ?: return Result.success()
         val scope = prefs.getString("scope_url", null) ?: return Result.success()
         val connection = try {
@@ -95,8 +95,8 @@ class PushWorker(context: Context, params: WorkerParameters) : Worker(context, p
 
     companion object {
         const val KEY_TOKEN = "push_token"
-        private const val CHANNEL = "skypane"
-        private const val PERIODIC = "skypane-push"
+        private const val CHANNEL = "rainbead"
+        private const val PERIODIC = "rainbead-push"
 
         /** True while the app is in front: its page shows the notifications. */
         @Volatile
@@ -110,7 +110,7 @@ class PushWorker(context: Context, params: WorkerParameters) : Worker(context, p
                 PERIODIC, ExistingPeriodicWorkPolicy.KEEP,
                 PeriodicWorkRequest.Builder(PushWorker::class.java, 15, TimeUnit.MINUTES).setConstraints(network).build(),
             )
-            manager.enqueueUniqueWork("skypane-push-now", ExistingWorkPolicy.REPLACE, OneTimeWorkRequest.Builder(PushWorker::class.java).setConstraints(network).build())
+            manager.enqueueUniqueWork("rainbead-push-now", ExistingWorkPolicy.REPLACE, OneTimeWorkRequest.Builder(PushWorker::class.java).setConstraints(network).build())
         }
     }
 }

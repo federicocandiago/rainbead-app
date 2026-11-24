@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Skypane"
+rootProject.name = "Rainbead"
 include(":app")

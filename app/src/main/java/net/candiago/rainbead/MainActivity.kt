@@ -1,4 +1,4 @@
-package net.candiago.skypane
+package net.candiago.rainbead
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -35,12 +35,13 @@ import android.widget.TextView
 import android.widget.Toast
 import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
+import java.net.URLDecoder
 import java.util.concurrent.Executors
 import kotlin.math.roundToInt
 
 class MainActivity : Activity() {
 
-    private val prefs by lazy { getSharedPreferences("skypane", MODE_PRIVATE) }
+    private val prefs by lazy { getSharedPreferences("rainbead", MODE_PRIVATE) }
     private val executor = Executors.newSingleThreadExecutor()
 
     private var webView: WebView? = null
@@ -59,7 +60,7 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        topColor = getColor(R.color.skypane)
+        topColor = getColor(R.color.rainbead)
         bottomColor = topColor
 
         // Draw behind the system bars (mandatory from Android 15, opt-in before):
@@ -197,7 +198,7 @@ class MainActivity : Activity() {
         CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, false)
 
-        web.addJavascriptInterface(Bridge(), "SkypaneAndroid")
+        web.addJavascriptInterface(Bridge(), "RainbeadAndroid")
         web.webViewClient = Client()
         web.webChromeClient = Chrome()
         web.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
@@ -248,7 +249,7 @@ class MainActivity : Activity() {
         val uri = Uri.parse(url)
         if (uri.scheme != "http" && uri.scheme != "https") return
         try {
-            val name = URLUtil.guessFileName(url, contentDisposition, mimeType)
+            val name = fileName(url, contentDisposition, mimeType)
             val request = DownloadManager.Request(uri)
                 .setMimeType(mimeType)
                 .addRequestHeader("User-Agent", userAgent)
@@ -261,6 +262,23 @@ class MainActivity : Activity() {
         } catch (_: Exception) {
             openExternally(uri)
         }
+    }
+
+    /**
+     * The name a download is saved with. Rainbead sends it twice (RFC 6266): filename*=UTF-8''… with the real name,
+     * accents and all, and an ASCII filename="…". URLUtil.guessFileName reads neither form reliably and falls back to
+     * the last piece of the address plus ".bin" ("download.bin"), so the header is read here first.
+     */
+    private fun fileName(url: String, disposition: String?, mimeType: String?): String {
+        val header = disposition.orEmpty()
+        val extended = Regex("""filename\*\s*=\s*([^']*)'[^']*'([^;]+)""", RegexOption.IGNORE_CASE).find(header)?.let {
+            runCatching { URLDecoder.decode(it.groupValues[2].trim().replace("+", "%2B"), it.groupValues[1].ifBlank { "UTF-8" }) }.getOrNull()
+        }
+        val plain = Regex("""filename\s*=\s*(?:"((?:\\.|[^"\\])*)"|([^;\s]+))""", RegexOption.IGNORE_CASE).find(header)?.let {
+            it.groupValues[1].ifEmpty { it.groupValues[2] }.replace(Regex("""\\(.)"""), "$1")
+        }
+        val name = (extended ?: plain)?.replace(Regex("""[/\\:*?"<>|\u0000-\u001f]"""), "_")?.trim()
+        return if (name.isNullOrEmpty()) URLUtil.guessFileName(url, disposition, mimeType) else name.take(200)
     }
 
     private inner class Client : WebViewClient() {
@@ -352,7 +370,7 @@ class MainActivity : Activity() {
         /** The token the signed-in page made for this phone: kept, the permission asked, the checks started. */
         @JavascriptInterface
         fun pushToken(token: String?) {
-            if (token.isNullOrBlank() || !token.startsWith("skypush_")) return
+            if (token.isNullOrBlank() || !token.startsWith("beadpush_")) return
             prefs.edit().putString(PushWorker.KEY_TOKEN, token).apply()
             runOnUiThread {
                 if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -369,7 +387,7 @@ class MainActivity : Activity() {
         @JavascriptInterface
         fun print(html: String?, title: String?) {
             if (html.isNullOrBlank()) return
-            val name = (title ?: "Skypane").ifBlank { "Skypane" }.take(80)
+            val name = (title ?: "Rainbead").ifBlank { "Rainbead" }.take(80)
             runOnUiThread {
                 val view = WebView(this@MainActivity)
                 printing = view // kept until printed: a web view nobody holds can go before it is done
@@ -504,7 +522,7 @@ class MainActivity : Activity() {
         } catch (_: Exception) {
             null
         } ?: "1"
-        return "$base SkypaneAndroid/$version"
+        return "$base RainbeadAndroid/$version"
     }
 
     private object WebSettingsDefaults {
@@ -522,12 +540,12 @@ class MainActivity : Activity() {
 
         /**
          * Reports the colours for the phone's status and navigation bars, and keeps reporting when they
-         * change: on Skypane its theme-color and skypane-nav-color (the colours of its own bars, which
+         * change: on Rainbead its theme-color and rainbead-nav-color (the colours of its own bars, which
          * follow the theme), elsewhere the root and body backgrounds.
          */
         private val BAR_SCRIPT = """
             (function () {
-              if (window.__skypaneBars) { window.__skypaneBars(); return; }
+              if (window.__rainbeadBars) { window.__rainbeadBars(); return; }
               var last = '', queued = false, bodySeen = false, ctx = null;
               // Any CSS colour (color-mix(), color(srgb …), oklch() …) → "rgb(r, g, b)", or '' if transparent.
               function rgb(c) {
@@ -543,16 +561,16 @@ class MainActivity : Activity() {
               }
               function bg(el) { return el ? rgb(getComputedStyle(el).backgroundColor) : ''; }
               function send() {
-                // Skypane says the colours of its own bars (theme-color for the top, skypane-nav-color for the
+                // Rainbead says the colours of its own bars (theme-color for the top, rainbead-nav-color for the
                 // bottom); other pages: the root background, then the body's
                 var meta = document.querySelector('meta[name="theme-color"]');
-                var nav = document.querySelector('meta[name="skypane-nav-color"]');
+                var nav = document.querySelector('meta[name="rainbead-nav-color"]');
                 var top = (nav && rgb(meta && meta.content)) || bg(document.documentElement) || rgb(meta && meta.content);
                 var bottom = rgb(nav && nav.content) || bg(document.body) || top;
                 var key = top + '|' + bottom;
                 if (key === last) return;
                 last = key;
-                SkypaneAndroid.colors(top, bottom);
+                RainbeadAndroid.colors(top, bottom);
               }
               var observer = new MutationObserver(schedule);
               function attach() {
@@ -569,7 +587,7 @@ class MainActivity : Activity() {
               if (document.head) observer.observe(document.head, { childList: true, subtree: true, attributes: true, attributeFilter: ['content'] });
               window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', schedule);
               window.addEventListener('pageshow', function () { last = ''; schedule(); });
-              window.__skypaneBars = function () { last = ''; schedule(); };
+              window.__rainbeadBars = function () { last = ''; schedule(); };
               schedule();
             })();
         """.trimIndent()

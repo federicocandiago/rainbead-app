@@ -10,7 +10,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Skypane"
+        android:theme="@style/Theme.Rainbead"
         android:usesCleartextTraffic="true">
 
         <activity

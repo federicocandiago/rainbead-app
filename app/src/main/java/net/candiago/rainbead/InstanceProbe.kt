@@ -1,4 +1,4 @@
-package net.candiago.skypane
+package net.candiago.rainbead
 
 import org.json.JSONObject
 import java.io.InputStream
@@ -81,7 +81,7 @@ object InstanceProbe {
     }
 
     /**
-     * Some servers redirect "/skypane" to "http://…/skypane/" even when reached over HTTPS
+     * Some servers redirect "/rainbead" to "http://…/rainbead/" even when reached over HTTPS
      * (e.g. a directory-slash redirect behind a TLS proxy): never step down on the same host.
      */
     private fun keepHttps(from: URL, to: URL): URL =

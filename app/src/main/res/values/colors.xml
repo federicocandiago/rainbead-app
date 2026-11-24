@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="skypane">#0b74e8</color>
-    <color name="skypane_dark">#155da6</color>
+    <color name="rainbead">#0b74e8</color>
+    <color name="rainbead_dark">#155da6</color>
     <color name="ink">#10233a</color>
 </resources>
