@@ -7,5 +7,5 @@ local.properties
 _src/
 *.jks
 *.keystore
-rainbead-release.properties
+bluegleam-release.properties
 keystore.properties

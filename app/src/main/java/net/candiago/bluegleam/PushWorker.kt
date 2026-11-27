@@ -1,4 +1,4 @@
-package net.candiago.rainbead
+package net.candiago.bluegleam
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -22,14 +22,14 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Notifications without Google's push service: every quarter of an hour (the least Android allows) the phone
- * asks the Rainbead site what is new (GET {scope}api/push, with this phone's own token) and shows it. While the
+ * asks the Bluegleam site what is new (GET {scope}api/push, with this phone's own token) and shows it. While the
  * app is in front the page shows them itself, so the phone only keeps count. A token the site no longer knows
  * (the phone was removed in Settings › Devices) is forgotten: the page asks again next time.
  */
 class PushWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
 
     override fun doWork(): Result {
-        val prefs = applicationContext.getSharedPreferences("rainbead", Context.MODE_PRIVATE)
+        val prefs = applicationContext.getSharedPreferences("bluegleam", Context.MODE_PRIVATE)
         val token = prefs.getString(KEY_TOKEN, null) ?: return Result.success()
         val scope = prefs.getString("scope_url", null) ?: return Result.success()
         val connection = try {
@@ -95,8 +95,8 @@ class PushWorker(context: Context, params: WorkerParameters) : Worker(context, p
 
     companion object {
         const val KEY_TOKEN = "push_token"
-        private const val CHANNEL = "rainbead"
-        private const val PERIODIC = "rainbead-push"
+        private const val CHANNEL = "bluegleam"
+        private const val PERIODIC = "bluegleam-push"
 
         /** True while the app is in front: its page shows the notifications. */
         @Volatile
@@ -110,7 +110,7 @@ class PushWorker(context: Context, params: WorkerParameters) : Worker(context, p
                 PERIODIC, ExistingPeriodicWorkPolicy.KEEP,
                 PeriodicWorkRequest.Builder(PushWorker::class.java, 15, TimeUnit.MINUTES).setConstraints(network).build(),
             )
-            manager.enqueueUniqueWork("rainbead-push-now", ExistingWorkPolicy.REPLACE, OneTimeWorkRequest.Builder(PushWorker::class.java).setConstraints(network).build())
+            manager.enqueueUniqueWork("bluegleam-push-now", ExistingWorkPolicy.REPLACE, OneTimeWorkRequest.Builder(PushWorker::class.java).setConstraints(network).build())
         }
     }
 }

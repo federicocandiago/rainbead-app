@@ -3,7 +3,7 @@
     android:id="@+id/setup_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/rainbead"
+    android:background="@color/bluegleam"
     android:fillViewport="true">
 
     <LinearLayout
@@ -75,7 +75,7 @@
             android:stateListAnimator="@null"
             android:text="@string/setup_continue"
             android:textAllCaps="false"
-            android:textColor="@color/rainbead"
+            android:textColor="@color/bluegleam"
             android:textSize="16sp"
             android:textStyle="bold" />
     </LinearLayout>
